@@ -83,7 +83,7 @@ public class MapReduceFX extends Application{
      */
     public String mapReduceText(String input, SortMode sortMode) {
         //Remove all non-word characters excluding spaces
-        input = input.replaceAll("[^a-zA-Z_0-9 ]", "");
+        input = input.replaceAll("[^a-zA-Z_ ]", "");
 
         //Convert to lowercase
         input = input.toLowerCase();
