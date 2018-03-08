@@ -71,6 +71,15 @@ public class MapReduceFX extends Application{
         VBox root = new VBox();
         root.setPadding(new Insets(8,8,8,8));
 
+        //Initialize title
+        HBox titleBar = new HBox();
+        titleBar.setAlignment(Pos.CENTER);
+
+        Label titleLabel = new Label("MapReduceFX v0.1 by Stanley Fuller");
+        titleLabel.setStyle("-fx-font-size:18;");
+
+        titleBar.getChildren().add(titleLabel);
+
         //Initialize labels
         Label inputLabel = new Label("Text Input:");
         Label outputLabel = new Label("Output:");
@@ -97,7 +106,7 @@ public class MapReduceFX extends Application{
         buttonBar.getChildren().addAll(performButton);
 
         //Add all UI elements to the root layout
-        root.getChildren().addAll(inputLabel, inputArea, buttonBar, outputLabel, outputArea);
+        root.getChildren().addAll(titleBar, inputLabel, inputArea, buttonBar, outputLabel, outputArea);
 
         //Set scene and display UI
         Scene scene = new Scene(root);
