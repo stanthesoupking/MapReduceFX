@@ -83,6 +83,8 @@ public class MapReduceFX extends Application{
                 cCounter = 1;
             }
         }
+        //Add final word to output
+        outputLines.add(cWord + ", " + cCounter);
 
         //Sort from heighest to lowest occurrence
         Collections.sort(outputLines, new OutputLineComparator());
