@@ -10,19 +10,40 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.Button;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Collections;
 
 /**
- * MapReduceFX:
+ * MapReduceFX v0.1:
  * Simple program for performing the map reducealgorithm
  * on a body of text.
  * 
  * @author Stanley Fuller
  */
 public class MapReduceFX extends Application{
+
     public static void main(String[] args) {
         launch(args);
     }
     
+    /**
+     * Sorting algorithm for output lines:
+     * Currently only sorts from highest to lowest word occurrence
+     */
+    public class OutputLineComparator implements Comparator<String> {
+        @Override
+        public int compare(String a, String b) {
+
+            //Get occurrence from counts
+            int aCount = Integer.parseInt(a.replaceAll("[\\D]",""));
+            int bCount = Integer.parseInt(b.replaceAll("[\\D]",""));
+
+            //Return the occurrence difference between the two words
+            return bCount-aCount;
+        }
+    }
+
     /**
      * Takes text input and outputs a map reduced version
      * counting the frequency of each word.
@@ -40,8 +61,8 @@ public class MapReduceFX extends Application{
         //Sort words into alphabetic order
         Arrays.sort(words);
 
-        String output = ""; //Output string for the map reduced text
-        String cWord = "";  //Current word that is being counted
+        ArrayList<String> outputLines = new ArrayList<String>(); //Output lines for each word
+        String cWord = ""; //Current word that is being counted
 
         int cCounter = 1;   //Counter for how many times the current word
                             //has been found
@@ -57,11 +78,18 @@ public class MapReduceFX extends Application{
             else {
                 //Different word has been detected, add to output, reset counter
                 //and set the current word to the new word
-                output += cWord + ", " + cCounter + "\n";
+                outputLines.add(cWord + ", " + cCounter);
                 cWord = i;
                 cCounter = 1;
             }
         }
+
+        //Sort from heighest to lowest occurrence
+        Collections.sort(outputLines, new OutputLineComparator());
+
+        //Convert into human-readable string
+        String output = String.join("\n", outputLines);
+
         return output;
     }
 
