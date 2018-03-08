@@ -130,6 +130,8 @@ public class MapReduceFX extends Application{
 
     @Override
     public void start(Stage stage) {
+        stage.setTitle("MapReduceFX v0.2");
+
         //Initialize root layout
         VBox root = new VBox();
         root.setPadding(new Insets(8,8,8,8));
