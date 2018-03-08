@@ -40,7 +40,8 @@ public class MapReduceFX extends Application{
 
     /**
      * Sorting algorithm for output lines:
-     * Currently only sorts from highest to lowest word occurrence
+     * Can sort from highest to lowest,
+     * lowest to heighest and alphabetically descending
      */
     public class OutputLineComparator implements Comparator<String> {
         SortMode sortMode;
