@@ -9,10 +9,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Separator;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
+import javafx.beans.property.SimpleStringProperty;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -20,7 +24,7 @@ import java.util.Comparator;
 import java.util.Collections;
 
 /**
- * MapReduceFX v0.2:
+ * MapReduceFX v0.3:
  * Simple program for performing the map reduce algorithm
  * on a body of text.
  * 
@@ -31,50 +35,25 @@ public class MapReduceFX extends Application{
     public static void main(String[] args) {
         launch(args);
     }
-    
-    public enum SortMode {
-        ALPHABETICALLY,
-        HIGHEST_TO_LOWEST_OCCURRENCE,
-        LOWEST_TO_HIGHEST_OCCURRENCE
-    }
 
     /**
-     * Sorting algorithm for output lines:
-     * Can sort from highest to lowest,
-     * lowest to heighest and alphabetically descending
+     * 
      */
-    public class OutputLineComparator implements Comparator<String> {
-        SortMode sortMode;
+    public class OutputRow {
+        private String word;
+        private int frequency;
 
-        public OutputLineComparator(SortMode _sortMode) {
-            sortMode = _sortMode;
+        public OutputRow(String _word, int _frequency) {
+            this.word = _word;
+            this.frequency = _frequency;
         }
 
-        @Override
-        public int compare(String a, String b) {
-            switch(sortMode) {
-                case HIGHEST_TO_LOWEST_OCCURRENCE:
-                    {
-                    //Get occurrence from counts
-                    int aCount = Integer.parseInt(a.replaceAll("[\\D]",""));
-                    int bCount = Integer.parseInt(b.replaceAll("[\\D]",""));
+        public String getWord() {
+            return word;
+        }
 
-                    //Return the occurrence difference between the two words
-                    return bCount-aCount;
-                    }
-                case LOWEST_TO_HIGHEST_OCCURRENCE:
-                    {
-                    //Get occurrence from counts
-                    int aCount = Integer.parseInt(a.replaceAll("[\\D]",""));
-                    int bCount = Integer.parseInt(b.replaceAll("[\\D]",""));
-
-                    //Return the negative occurrence difference between the two words
-                    return aCount-bCount;
-                    }
-                default:
-                    return 0;
-            }
-            
+        public int getFrequency() {
+            return frequency;
         }
     }
 
@@ -82,7 +61,7 @@ public class MapReduceFX extends Application{
      * Takes text input and outputs a map reduced version
      * counting the frequency of each word.
      */
-    public String mapReduceText(String input, SortMode sortMode) {
+    public ObservableList<OutputRow> mapReduceText(String input) {
         //Remove all non-word characters excluding spaces
         input = input.replaceAll("[^a-zA-Z_ ]", "");
 
@@ -95,7 +74,7 @@ public class MapReduceFX extends Application{
         //Sort words into alphabetic order
         Arrays.sort(words);
 
-        ArrayList<String> outputLines = new ArrayList<String>(); //Output lines for each word
+        ObservableList<OutputRow> outputRows = FXCollections.observableArrayList(); //Output rows for each word, to be added to table
         String cWord = ""; //Current word that is being counted
 
         int cCounter = 1;   //Counter for how many times the current word
@@ -112,26 +91,20 @@ public class MapReduceFX extends Application{
             else {
                 //Different word has been detected, add to output, reset counter
                 //and set the current word to the new word
-                outputLines.add(cWord + ", " + cCounter);
+                outputRows.add(new OutputRow(cWord, cCounter));
                 cWord = i;
                 cCounter = 1;
             }
         }
         //Add final word to output
-        outputLines.add(cWord + ", " + cCounter);
+        outputRows.add(new OutputRow(cWord, cCounter));
 
-        //Sort from heighest to lowest occurrence
-        Collections.sort(outputLines, new OutputLineComparator(sortMode));
-
-        //Convert into human-readable string
-        String output = String.join("\n", outputLines);
-
-        return output;
+        return outputRows;
     }
 
     @Override
     public void start(Stage stage) {
-        stage.setTitle("MapReduceFX v0.2");
+        stage.setTitle("MapReduceFX v0.3");
 
         //Initialize root layout
         VBox root = new VBox();
@@ -141,7 +114,7 @@ public class MapReduceFX extends Application{
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER);
 
-        Label titleLabel = new Label("MapReduceFX v0.2 by Stanley Fuller");
+        Label titleLabel = new Label("MapReduceFX v0.3 by Stanley Fuller");
         titleLabel.setStyle("-fx-font-size:18;");
 
         titleBar.getChildren().add(titleLabel);
@@ -149,56 +122,41 @@ public class MapReduceFX extends Application{
         //Initialize labels
         Label inputLabel = new Label("Text Input:");
         Label outputLabel = new Label("Output:");
-        Label sortModeLabel = new Label("Sort Mode: ");
 
         //Initialize area for text input
         TextArea inputArea = new TextArea();
 
-        //Initialize area for map reduce output
-        TextArea outputArea = new TextArea();
+        //Initialize table for map reduce output
+        TableView<OutputRow> outputArea = new TableView<OutputRow>();
+        TableColumn<OutputRow,String> wordColumn = new TableColumn<OutputRow,String>("Word");
+        wordColumn.setCellValueFactory(
+            new PropertyValueFactory<OutputRow,String>("word")
+        );
+        TableColumn<OutputRow,Integer> frequencyColumn = new TableColumn<OutputRow,Integer>("Frequency");
+        frequencyColumn.setCellValueFactory(
+            new PropertyValueFactory<OutputRow,Integer>("frequency")
+        );
+        
+        //Add columns to table
+        outputArea.getColumns().setAll(wordColumn, frequencyColumn);
 
         //Initialize button bar
         HBox buttonBar = new HBox();
         buttonBar.setAlignment(Pos.CENTER);
         buttonBar.setPadding(new Insets(5, 0, 5, 0));
 
-        //Initialize combo box for selecting sort mode
-        ObservableList<String> options = 
-            FXCollections.observableArrayList(
-                "Alphabetically",
-                "Highest to lowest occurrence",
-                "Lowest to highest occurrence"
-        );
-        ComboBox sortModeBox = new ComboBox<>(options);
-        sortModeBox.getSelectionModel().select(0);  //Select 'alphabetically' as default option
-
-        //Seperator to create a space between the combo box and perform button
-        Separator barSeperator = new Separator();
-        barSeperator.setOrientation(Orientation.VERTICAL);
-        barSeperator.setVisible(false);
-
         //Initialize button for performing map reduce
         Button performButton = new Button("Perform Map Reduce");
         performButton.setOnAction(e -> {
-            //Get sort mode from combo box
-            SortMode sortMode = SortMode.ALPHABETICALLY;;
-            String sortModeValue = (String)sortModeBox.getValue();
-            if(sortModeValue.equals("Highest to lowest occurrence")) {
-                sortMode = SortMode.HIGHEST_TO_LOWEST_OCCURRENCE;
-            }
-            else if (sortModeValue.equals("Lowest to highest occurrence")) {
-                sortMode = SortMode.LOWEST_TO_HIGHEST_OCCURRENCE;
-            }
-
             //Perform map reduce on input with the selected sort mode
-            String mapReduced = mapReduceText(inputArea.getText(), sortMode);
+            ObservableList<OutputRow> mapReduced = mapReduceText(inputArea.getText());
 
-            //Display result in output text area
-            outputArea.setText(mapReduced);
+            //Display result in output table
+            outputArea.setItems(mapReduced);
         });
 
         //Add all elements to the button bar
-        buttonBar.getChildren().addAll(sortModeLabel, sortModeBox, barSeperator, performButton);
+        buttonBar.getChildren().addAll(performButton);
 
         //Add all UI elements to the root layout
         root.getChildren().addAll(titleBar, inputLabel, inputArea, buttonBar, outputLabel, outputArea);
