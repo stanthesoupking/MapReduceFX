@@ -37,7 +37,7 @@ public class MapReduceFX extends Application{
     }
 
     /**
-     * 
+     * Container for word+frequency entries for the output table
      */
     public class OutputRow {
         private String word;
